@@ -1,0 +1,68 @@
+<div class="sv-datatable-header-wrapper" #svDataTableHeaderRef>
+  <div class="sv-datatable" *ngIf="value && columns && showTableHeader" [ngClass]="styleClass ? styleClass : null">
+    <div class="sv-datatable-header">
+      <div class="sv-datatable-column" [ngStyle]="getCompleteColumnStyle(column.style ? column.style : null)" 
+        [ngClass]="column.styleClass ? column.styleClass : null" *ngFor="let column of columns">
+        <ng-container *ngIf="column.headerTemplate && !column.expander">
+          <template [ngTemplateOutlet]="column.headerTemplate" [ngOutletContext]="{col:column.field}"></template>
+        </ng-container>
+        <ng-container *ngIf="!column.headerTemplate && !column.expander">
+          <span [style.cursor]="column.sortable || column.customSortable ? 'pointer' : null" (click)="tableHeaderClickHandler($event,column.sortable,column.field,column.customSortable,column)">{{column.header}}<i *ngIf="column.sortable || column.customSortable" class="fa sv-data-table-sort-ico" [ngClass]="getSortingIcon(column.field)"></i></span>
+        </ng-container>
+        
+      </div>
+    </div>
+    <!-- .sv-datatable-header -->
+  </div>
+</div>
+<!-- .sv-datatable-header-wrapper -->
+
+
+<div class="sv-datatable-body-wrapper"  infinite-scroll
+         [infiniteScrollDistance]="scrollDistance"
+         [infiniteScrollThrottle]="throttle"
+         [scrollWindow]=false
+         (scrolled)="onScrollDown()" #svDataTableBodyRef [style.maxHeight]="(scrollable && scrollHeight!=='') ? scrollHeight : null"
+  [class.vertical-scrollable-wrapper]="scrollable && scrollHeight!==''">
+  <div class="sv-datatable" *ngIf="value && columns" [ngClass]="styleClass ? styleClass : null">
+    <!-- .sv-datatable-body -->
+    <div class="sv-datatable-body" *ngFor="let valueObj of value">
+      <div class="sv-datatable-row" [style.cursor]="selectionEnable ? 'pointer' : null" [class.sv-datatable-state-highlight]="toggleRowHighlight(valueObj)">
+        <div class="sv-datatable-column" (click)="tableRowClickHandler($event,valueObj,column.expander)" [ngStyle]="getCompleteColumnStyle(column.style ? column.style : null)"
+          [ngClass]="column.styleClass ? column.styleClass : null" *ngFor="let column of columns">
+
+          <ng-container *ngIf="column.bodyTemplate && !column.expander">
+            <template [ngTemplateOutlet]="column.bodyTemplate" [ngOutletContext]="{rowData: valueObj,col:column.field}"></template>
+          </ng-container>
+
+          <ng-container *ngIf="!column.bodyTemplate && !column.expander">{{valueObj[column.field]}}</ng-container>
+
+          <ng-container *ngIf="!column.bodyTemplate && column.expander">
+            <div (click)="expandIconClickHandler(valueObj)">
+              <i class="fa fa-chevron-circle-down" *ngIf="showExpandTemplateHandler(valueObj)"></i>
+              <i class="fa fa-chevron-circle-right" *ngIf="!showExpandTemplateHandler(valueObj)"></i>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="column.bodyTemplate && column.expander">
+            <template [ngTemplateOutlet]="column.bodyTemplate" [ngOutletContext]="{rowData: valueObj,col:column.field}"></template>
+          </ng-container>
+
+        </div>
+      </div>
+      <div class="sv-datatable-row expander-template-row" *ngIf="showExpandTemplateHandler(valueObj)">
+        <td [attr.colspan]="columns.length" [ngStyle]="expanderTemplateStyle">
+          <template [ngTemplateOutlet]="rowExpansion" [ngOutletContext]="{rowData: valueObj}"></template>
+        </td>
+      </div>
+    </div>
+    <div class="sv-datatable-body" *ngIf="value.length==0">
+      <div class="sv-datatable-row">
+        <div class="sv-datatable-column" style="padding:10px 0">There is no data to display!</div>
+      </div>
+    </div>
+    <!-- .sv-datatable-body -->
+  </div>
+  <!-- .sv-datatable -->
+</div>
+<!-- .sv-datatable-body-wrapper -->
